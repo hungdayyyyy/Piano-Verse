@@ -1,3 +1,7 @@
+/**
+ * RTK Query baseQuery — wrapper dùng services/http.ts
+ * để tất cả API call đều đi qua 1 chỗ xử lý tập trung.
+ */
 import {
   fetchBaseQuery,
   type BaseQueryFn,
@@ -5,58 +9,27 @@ import {
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "@/store/store";
-import type { ApiError } from "./types";
+import { setHttpToken } from "@/services/http";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-// ─── Raw base query (no auth) ─────────────────────────────────────────────────
+// Raw base query dùng fetchBaseQuery (RTK Query tích hợp)
+// Token được inject từ Redux store
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: `${API_BASE_URL}/api`,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
+      // Sync token vào http client để các direct call cũng có token
+      setHttpToken(token);
     }
-    headers.set("Content-Type", "application/json");
     return headers;
   },
   credentials: "include",
 });
 
-// ─── Response transformer - unwraps envelope ──────────────────────────────────
-export function transformApiResponse<T>(response: {
-  success: boolean;
-  data?: T;
-  message?: string;
-}): T {
-  if (!response.success) {
-    throw new Error(response.message || "Request failed");
-  }
-  return response.data as T;
-}
-
-// ─── Error transformer ────────────────────────────────────────────────────────
-export function transformApiError(
-  error: FetchBaseQueryError
-): ApiError {
-  if (error.status === "FETCH_ERROR") {
-    return { status: 0, message: "Network error. Please check your connection." };
-  }
-  if (error.status === "PARSING_ERROR") {
-    return { status: error.originalStatus, message: "Invalid server response." };
-  }
-  const data = error.data as { message?: string; code?: string } | undefined;
-  return {
-    status: Number(error.status),
-    message: data?.message || "An unexpected error occurred.",
-    code: data?.code,
-  };
-}
-
-// ─── Auto-refresh base query ──────────────────────────────────────────────────
-// On 401, attempts to refresh the access token via our Route Handler,
-// then retries the original request once.
+// Auto-refresh on 401
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -64,40 +37,28 @@ export const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    // Attempt token refresh via Next.js Route Handler (handles cookie storage)
+  if (result.error?.status === 401) {
     const refreshResult = await fetch("/api/auth/refresh", { method: "POST" });
-
     if (refreshResult.ok) {
-      const refreshData = (await refreshResult.json()) as {
-        accessToken?: string;
-      };
-      if (refreshData.accessToken) {
-        // Update store with new access token
+      const data = (await refreshResult.json()) as { accessToken?: string };
+      if (data.accessToken) {
         const { setAccessToken } = await import("@/features/auth/authSlice");
-        api.dispatch(setAccessToken(refreshData.accessToken));
-        // Retry original request
+        api.dispatch(setAccessToken(data.accessToken));
+        setHttpToken(data.accessToken);
         result = await rawBaseQuery(args, api, extraOptions);
       }
     } else {
-      // Refresh failed — clear auth state
       const { clearAuth } = await import("@/features/auth/authSlice");
       api.dispatch(clearAuth());
+      setHttpToken(null);
     }
   }
 
   return result;
 };
 
-// ─── Multipart base query (for file uploads) ──────────────────────────────────
-export const multipartBaseQuery = fetchBaseQuery({
-  baseUrl: `${API_BASE_URL}/api`,
-  prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.accessToken;
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
-    // Do NOT set Content-Type — browser sets it with boundary for multipart
-    return headers;
-  },
-});
+export function transformApiError(error: FetchBaseQueryError) {
+  if (error.status === "FETCH_ERROR") return { status: 0, message: "Network error" };
+  const data = error.data as { message?: string; code?: string } | undefined;
+  return { status: Number(error.status), message: data?.message || "Request failed", code: data?.code };
+}

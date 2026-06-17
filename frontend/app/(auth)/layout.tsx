@@ -1,12 +1,8 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { AuthFooter } from "@/components/auth/AuthFooter";
+import CopyrightFooter from "./copyright-footer";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-4 py-12">
       {/* Logo */}
@@ -23,7 +19,7 @@ export default function AuthLayout({
       <div className="w-full max-w-sm">{children}</div>
 
       {/* Footer */}
-      <AuthFooter />
+      <CopyrightFooter />
     </div>
   );
 }

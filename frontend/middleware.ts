@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_NAMES } from "@/lib/auth/cookieNames";
+import { COOKIE_NAMES } from "@/lib/auth/cookie-names";
 
 // Routes that require authentication
 const PROTECTED_PATTERNS = [
@@ -83,5 +83,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public|api/auth).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|public|api/auth).*)",
+  ],
 };

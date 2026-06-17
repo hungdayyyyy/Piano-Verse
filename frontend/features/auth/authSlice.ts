@@ -2,7 +2,7 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { User, UserRole } from "@/lib/api/types";
-import { COOKIE_NAMES } from "@/lib/auth/cookieNames";
+import { COOKIE_NAMES } from "@/lib/auth/cookie-names";
 
 interface AuthState {
   user: User | null;
@@ -39,7 +39,7 @@ const authSlice = createSlice({
   reducers: {
     setCredentials(
       state,
-      action: PayloadAction<{ user: User; accessToken: string }>,
+      action: PayloadAction<{ user: User; accessToken: string }>
     ) {
       state.user = action.payload.user;
       state.accessToken = action.payload.accessToken;
@@ -85,8 +85,7 @@ export const {
 export default authSlice.reducer;
 
 // Selectors
-export const selectCurrentUser = (state: { auth: AuthState }) =>
-  state.auth.user;
+export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectRole = (state: { auth: AuthState }) => state.auth.role;
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>
   state.auth.isAuthenticated;

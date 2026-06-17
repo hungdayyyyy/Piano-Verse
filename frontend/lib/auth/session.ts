@@ -1,9 +1,16 @@
+// server-only — never import this file from Client Components.
+// It depends on "next/headers" which is available only in Server Components
+// and Route Handlers (App Router).
 import { cookies } from "next/headers";
 import type { AuthTokens, User } from "@/lib/api/types";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  USER_COOKIE,
+  COOKIE_NAMES,
+} from "@/lib/auth/cookie-names";
 
-const ACCESS_TOKEN_COOKIE = "pv_access";
-const REFRESH_TOKEN_COOKIE = "pv_refresh";
-const USER_COOKIE = "pv_user";
+export { COOKIE_NAMES };
 
 const SECURE = process.env.NODE_ENV === "production";
 
@@ -83,10 +90,3 @@ export async function clearAuthCookies(): Promise<void> {
   cookieStore.delete(REFRESH_TOKEN_COOKIE);
   cookieStore.delete(USER_COOKIE);
 }
-
-// ─── Cookie names (for client-side reads) ─────────────────────────────────────
-export const COOKIE_NAMES = {
-  ACCESS_TOKEN: ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN: REFRESH_TOKEN_COOKIE,
-  USER: USER_COOKIE,
-} as const;
