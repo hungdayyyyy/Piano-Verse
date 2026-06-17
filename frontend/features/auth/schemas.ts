@@ -44,7 +44,7 @@ export const resetPasswordSchema = z
       .max(100, "Password is too long"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
-  .refine((data: any) => data.newPassword === data.confirmPassword, {
+  .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });

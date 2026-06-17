@@ -15,9 +15,7 @@ export function decodeJWT(token: string): JWTPayload | null {
     const [, payloadB64] = token.split(".");
     if (!payloadB64) return null;
     const padding = "=".repeat((4 - (payloadB64.length % 4)) % 4);
-    const decoded = atob(
-      payloadB64.replace(/-/g, "+").replace(/_/g, "/") + padding,
-    );
+    const decoded = atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/") + padding);
     return JSON.parse(decoded) as JWTPayload;
   } catch {
     return null;

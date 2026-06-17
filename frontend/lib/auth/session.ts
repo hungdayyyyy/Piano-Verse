@@ -10,7 +10,7 @@ const SECURE = process.env.NODE_ENV === "production";
 // ─── Write tokens to HTTP-only cookies (called from Route Handlers) ───────────
 export async function setAuthCookies(
   tokens: AuthTokens,
-  user: User,
+  user: User
 ): Promise<void> {
   const cookieStore = await cookies();
 
@@ -48,7 +48,7 @@ export async function setAuthCookies(
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
-    },
+    }
   );
 }
 

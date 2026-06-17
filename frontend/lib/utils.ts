@@ -62,12 +62,12 @@ export function getInitials(firstName: string, lastName?: string): string {
 }
 
 export function buildQueryString(
-  params: Record<string, string | number | boolean | undefined>,
+  params: Record<string, string | number | boolean | undefined>
 ): string {
   const query = Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== "")
     .map(
-      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`
     )
     .join("&");
   return query ? `?${query}` : "";
@@ -76,7 +76,7 @@ export function buildQueryString(
 export function computeScore(
   notesHit: number,
   notesMissed: number,
-  accuracyPercentage: number,
+  accuracyPercentage: number
 ): number {
   const total = notesHit + notesMissed;
   if (total === 0) return 0;
