@@ -10,11 +10,18 @@ interface DropdownProps {
   className?: string;
 }
 
-export function Dropdown({ trigger, children, align = "right", className }: DropdownProps) {
+export function Dropdown({
+  trigger,
+  children,
+  align = "right",
+  className,
+}: DropdownProps) {
   const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    setMounted(true);
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -25,15 +32,17 @@ export function Dropdown({ trigger, children, align = "right", className }: Drop
   }, []);
 
   return (
-    <div ref={ref} className="relative inline-block">
-      <div onClick={() => setOpen((v) => !v)}>{trigger}</div>
-      {open && (
+    <div ref={ref} className="relative inline-block" suppressHydrationWarning>
+      <div onClick={mounted ? () => setOpen((v) => !v) : undefined}>
+        {trigger}
+      </div>
+      {mounted && open && (
         <div
           className={cn(
             "absolute z-50 mt-2 min-w-[10rem] rounded-lg border border-[var(--border)]",
             "bg-[var(--background-card)] shadow-lg py-1 animate-fade-in",
             align === "right" ? "right-0" : "left-0",
-            className
+            className,
           )}
         >
           <div onClick={() => setOpen(false)}>{children}</div>
@@ -48,7 +57,13 @@ interface DropdownItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   destructive?: boolean;
 }
 
-export function DropdownItem({ icon, destructive, children, className, ...props }: DropdownItemProps) {
+export function DropdownItem({
+  icon,
+  destructive,
+  children,
+  className,
+  ...props
+}: DropdownItemProps) {
   return (
     <button
       className={cn(
@@ -57,7 +72,7 @@ export function DropdownItem({ icon, destructive, children, className, ...props 
         destructive
           ? "text-[var(--destructive)] hover:text-[var(--destructive)]"
           : "text-[var(--foreground)]",
-        className
+        className,
       )}
       {...props}
     >

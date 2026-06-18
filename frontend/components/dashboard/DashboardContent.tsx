@@ -1,15 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, Clock, Target, Zap, Music2, Piano, ArrowRight, TrendingUp } from "lucide-react";
+import {
+  Activity,
+  Clock,
+  Target,
+  Zap,
+  Music2,
+  Piano,
+  ArrowRight,
+  TrendingUp,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetStatsQuery, useGetSessionsQuery, useGetTrendQuery } from "@/features/practice/practiceApi";
+import {
+  useGetStatsQuery,
+  useGetSessionsQuery,
+  useGetTrendQuery,
+} from "@/features/practice/practiceApi";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser } from "@/features/auth/authSlice";
-import { formatMinutes, formatPercentage, formatRelativeDate } from "@/lib/utils";
+import {
+  formatMinutes,
+  formatPercentage,
+  formatRelativeDate,
+} from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -49,9 +67,15 @@ function StatCard({
               {label}
             </p>
             <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
-            {sub && <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">{sub}</p>}
+            {sub && (
+              <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">
+                {sub}
+              </p>
+            )}
           </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorMap[color]}`}>
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorMap[color]}`}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -62,20 +86,24 @@ function StatCard({
 
 export function DashboardContent() {
   const user = useAppSelector(selectCurrentUser);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { data: statsData, isLoading: statsLoading } = useGetStatsQuery();
-  const { data: sessionsData, isLoading: sessionsLoading } = useGetSessionsQuery({ limit: 5 });
+  const { data: sessionsData, isLoading: sessionsLoading } =
+    useGetSessionsQuery({ limit: 5 });
   const { data: trendData } = useGetTrendQuery({ days: 7 });
 
   const stats = statsData?.data;
   const sessions = sessionsData?.data ?? [];
   const trend = trendData?.data ?? [];
 
-  const greeting = () => {
+  const [greeting, setGreeting] = useState("Good morning");
+  useEffect(() => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
-  };
+    setGreeting(
+      h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening",
+    );
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -83,10 +111,11 @@ export function DashboardContent() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">
-            {greeting()}, {user?.firstName ?? "Musician"} 👋
+            {greeting}, {mounted ? (user?.firstName ?? "Musician") : "Musician"}{" "}
+            👋
           </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {user?.currentStreak
+            {mounted && user?.currentStreak
               ? `${user.currentStreak} day streak — keep it up!`
               : "Start practicing to build your streak"}
           </p>
@@ -132,7 +161,11 @@ export function DashboardContent() {
               icon={Activity}
               label="Current Streak"
               value={`${user?.currentStreak ?? 0} days`}
-              sub={user?.lastPracticeDate ? `Last: ${formatRelativeDate(user.lastPracticeDate)}` : "No sessions yet"}
+              sub={
+                user?.lastPracticeDate
+                  ? `Last: ${formatRelativeDate(user.lastPracticeDate)}`
+                  : "No sessions yet"
+              }
               color="muted"
             />
           </>
@@ -160,9 +193,13 @@ export function DashboardContent() {
                   <XAxis
                     dataKey="date"
                     tick={{ fontSize: 11, fill: "var(--foreground-muted)" }}
-                    tickFormatter={(v: string) => new Date(v).toLocaleDateString("en", { weekday: "short" })}
+                    tickFormatter={(v: string) =>
+                      new Date(v).toLocaleDateString("en", { weekday: "short" })
+                    }
                   />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--foreground-muted)" }} />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--foreground-muted)" }}
+                  />
                   <Tooltip
                     contentStyle={{
                       background: "var(--background-card)",
@@ -215,9 +252,13 @@ export function DashboardContent() {
               ))
             ) : sessions.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <p className="text-sm text-[var(--foreground-muted)]">No sessions yet</p>
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  No sessions yet
+                </p>
                 <Link href="/practice/new">
-                  <Button size="sm" variant="outline">Record your first session</Button>
+                  <Button size="sm" variant="outline">
+                    Record your first session
+                  </Button>
                 </Link>
               </div>
             ) : (
@@ -229,7 +270,9 @@ export function DashboardContent() {
                         <Music2 className="h-4 w-4 text-[var(--primary)]" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium truncate max-w-[140px]">{session.songName}</p>
+                        <p className="text-sm font-medium truncate max-w-[140px]">
+                          {session.songName}
+                        </p>
                         <p className="text-xs text-[var(--foreground-muted)]">
                           {formatRelativeDate(session.createdAt)}
                         </p>
@@ -241,8 +284,8 @@ export function DashboardContent() {
                           session.accuracyPercentage >= 80
                             ? "success"
                             : session.accuracyPercentage >= 60
-                            ? "warning"
-                            : "secondary"
+                              ? "warning"
+                              : "secondary"
                         }
                       >
                         {formatPercentage(session.accuracyPercentage, 0)}
@@ -298,21 +341,28 @@ function QuickAction({
   color: "primary" | "accent" | "muted";
 }) {
   const colorMap = {
-    primary: "group-hover:text-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]",
-    accent: "group-hover:text-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]",
-    muted: "group-hover:text-[var(--foreground)] bg-[var(--background-muted)] text-[var(--foreground-muted)]",
+    primary:
+      "group-hover:text-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]",
+    accent:
+      "group-hover:text-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]",
+    muted:
+      "group-hover:text-[var(--foreground)] bg-[var(--background-muted)] text-[var(--foreground-muted)]",
   };
 
   return (
     <Link href={href} className="group">
       <Card className="transition-all hover:border-[var(--border-muted)] hover:shadow-md">
         <CardContent className="flex items-center gap-4 p-5">
-          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${colorMap[color]}`}>
+          <div
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${colorMap[color]}`}
+          >
             <Icon className="h-5 w-5" />
           </div>
           <div>
             <p className="text-sm font-medium">{title}</p>
-            <p className="text-xs text-[var(--foreground-muted)]">{description}</p>
+            <p className="text-xs text-[var(--foreground-muted)]">
+              {description}
+            </p>
           </div>
           <ArrowRight className="ml-auto h-4 w-4 text-[var(--foreground-subtle)] transition-transform group-hover:translate-x-0.5" />
         </CardContent>

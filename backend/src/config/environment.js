@@ -1,6 +1,6 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 export const config = {
   // Server
@@ -17,9 +17,15 @@ export const config = {
 
   // JWT
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-key-change-in-production',
+  JWT_REFRESH_SECRET:
+    process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-key-change-in-production',
   JWT_EXPIRY: process.env.JWT_EXPIRY || '7d',
   JWT_REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY || '30d',
+
+  // Cloudinary
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 
   // AWS S3
   AWS_REGION: process.env.AWS_REGION || 'us-east-1',
@@ -58,24 +64,17 @@ export const config = {
   // Feature flags
   ENABLE_AI_FEATURES: process.env.ENABLE_AI_FEATURES !== 'false',
   ENABLE_REAL_TIME_FEATURES: process.env.ENABLE_REAL_TIME_FEATURES !== 'false',
-}
+};
 
 // Validate required environment variables
-const requiredEnvVars = [
-  'MONGODB_URI',
-  'JWT_SECRET',
-]
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
 
 if (config.NODE_ENV === 'production') {
-  requiredEnvVars.push(
-    'AWS_ACCESS_KEY_ID',
-    'AWS_SECRET_ACCESS_KEY',
-    'OPENAI_API_KEY'
-  )
+  requiredEnvVars.push('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'OPENAI_API_KEY');
 }
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    console.warn(`Warning: Required environment variable ${envVar} is not set`)
+    console.warn(`Warning: Required environment variable ${envVar} is not set`);
   }
 }

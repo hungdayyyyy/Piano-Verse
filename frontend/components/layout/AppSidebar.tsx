@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser, selectRole } from "@/features/auth/authSlice";
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { isAdmin, isTeacherOrAdmin } from "@/lib/auth/jwt";
@@ -65,10 +66,15 @@ function NavLink({ item, active }: NavLinkProps) {
         "transition-all duration-150",
         active
           ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-          : "text-[var(--foreground-muted)] hover:bg-[var(--background-muted)] hover:text-[var(--foreground)]"
+          : "text-[var(--foreground-muted)] hover:bg-[var(--background-muted)] hover:text-[var(--foreground)]",
       )}
     >
-      <Icon className={cn("h-4 w-4 flex-shrink-0", active && "text-[var(--primary-foreground)]")} />
+      <Icon
+        className={cn(
+          "h-4 w-4 flex-shrink-0",
+          active && "text-[var(--primary-foreground)]",
+        )}
+      />
       <span className="flex-1 truncate">{item.label}</span>
       {item.badge && (
         <Badge
@@ -86,6 +92,8 @@ export function AppSidebar() {
   const pathname = usePathname();
   const user = useAppSelector(selectCurrentUser);
   const role = useAppSelector(selectRole) as UserRole | null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === href : pathname.startsWith(href);
@@ -104,8 +112,12 @@ export function AppSidebar() {
           <Sparkles className="h-4 w-4 text-[var(--primary-foreground)]" />
         </div>
         <div>
-          <span className="font-bold text-sm text-[var(--foreground)]">PianoVerse</span>
-          <span className="ml-1 text-xs text-[var(--primary)] font-semibold">AI</span>
+          <span className="font-bold text-sm text-[var(--foreground)]">
+            PianoVerse
+          </span>
+          <span className="ml-1 text-xs text-[var(--primary)] font-semibold">
+            AI
+          </span>
         </div>
       </div>
 
@@ -124,7 +136,7 @@ export function AppSidebar() {
       </div>
 
       {/* User card */}
-      {user && (
+      {mounted && user && (
         <div className="border-t border-[var(--border)] px-4 py-3">
           <Link
             href="/profile"

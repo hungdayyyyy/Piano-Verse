@@ -13,13 +13,7 @@ router.get('/tracks/search', StreamingController.searchTracks);
 router.get('/tracks/artist/:artist', StreamingController.getByArtist);
 router.get('/tracks/difficulty/:difficulty', StreamingController.getByDifficulty);
 
-// Auth routes
-router.post('/tracks/:trackId/play', authenticate, StreamingController.playTrack);
-router.get('/recently-played', authenticate, StreamingController.getRecentlyPlayed);
-router.post('/tracks/:trackId/favorite', authenticate, StreamingController.toggleFavorite);
-router.get('/favorites', authenticate, StreamingController.getFavorites);
-
-// Admin/Teacher only - upload
+// Admin/Teacher only - upload (must be BEFORE /:trackId dynamic routes to avoid shadowing)
 router.post(
   '/tracks/upload/audio',
   authenticate,
@@ -32,6 +26,12 @@ router.post(
   authorize('teacher', 'admin'),
   TrackController.uploadVideo
 );
+
+// Auth routes (dynamic :trackId routes come AFTER static routes)
+router.post('/tracks/:trackId/play', authenticate, StreamingController.playTrack);
+router.get('/recently-played', authenticate, StreamingController.getRecentlyPlayed);
+router.post('/tracks/:trackId/favorite', authenticate, StreamingController.toggleFavorite);
+router.get('/favorites', authenticate, StreamingController.getFavorites);
 router.delete('/tracks/:id', authenticate, authorize('admin'), TrackController.deleteTrack);
 
 export default router;

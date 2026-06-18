@@ -15,7 +15,7 @@ export async function POST() {
     if (!refreshToken) {
       return NextResponse.json(
         { success: false, message: "No refresh token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -27,11 +27,11 @@ export async function POST() {
 
     const data = (await res.json()) as ApiResponse<AuthResponse>;
 
-    if (!res.ok || !data.success || !data.data) {
+    if (!res.ok || !data.success || !data.data || !data.data.tokens) {
       await clearAuthCookies();
       return NextResponse.json(
         { success: false, message: "Session expired" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -46,7 +46,7 @@ export async function POST() {
     await clearAuthCookies();
     return NextResponse.json(
       { success: false, message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
